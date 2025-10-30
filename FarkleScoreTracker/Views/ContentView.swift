@@ -43,34 +43,38 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     // Game in progress
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            // Current player indicator
-                            if let currentPlayer = gameState.currentPlayer {
-                                VStack(spacing: 8) {
-                                    Text("Current Turn")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Text(currentPlayer.name)
-                                        .font(.system(size: 32, weight: .bold))
-                                        .foregroundColor(.green)
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(spacing: 16) {
+                                // Player list
+                                ForEach(gameState.players) { player in
+                                    PlayerRowView(
+                                        player: player,
+                                        isCurrentTurn: player.id == gameState.currentPlayer?.id
+                                    )
+                                    .id(player.id)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.green.opacity(0.1))
-                                .cornerRadius(12)
                             }
-                            
-                            // Player list
-                            ForEach(gameState.players) { player in
-                                PlayerRowView(
-                                    player: player,
-                                    isCurrentTurn: player.id == gameState.currentPlayer?.id
-                                )
+                            .padding()
+                        }
+                        .onChange(of: gameState.currentTurnIndex) { oldValue, newValue in
+                            // Scroll to current player when turn changes
+                            if let currentPlayer = gameState.currentPlayer {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    proxy.scrollTo(currentPlayer.id, anchor: .center)
+                                }
                             }
                         }
-                        .padding()
+                        .onAppear {
+                            // Scroll to current player on initial load
+                            if let currentPlayer = gameState.currentPlayer {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        proxy.scrollTo(currentPlayer.id, anchor: .center)
+                                    }
+                                }
+                            }
+                        }
                     }
                     
                     Divider()
@@ -81,6 +85,9 @@ struct ContentView: View {
                             gameState.addScore(score, to: currentPlayer.id)
                             gameState.advanceTurn()
                         }
+                    } onFarkle: {
+                        // Farkle means no points scored, just advance turn
+                        gameState.advanceTurn()
                     }
                 }
             }

@@ -10,6 +10,7 @@ import SwiftUI
 struct ScoreInputView: View {
     @Binding var currentInput: String
     let onSubmit: (Int) -> Void
+    let onFarkle: () -> Void
     
     private let columns = [
         GridItem(.flexible()),
@@ -82,18 +83,31 @@ struct ScoreInputView: View {
                 }
             }
             
-            // Submit button
-            Button(action: submitScore) {
-                Text("Add to Score")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .background(currentInput.isEmpty ? Color.gray : Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+            // Action buttons
+            HStack(spacing: 12) {
+                Button(action: farkle) {
+                    Text("Farkle")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                
+                Button(action: submitScore) {
+                    Text("Bank")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(currentInput.isEmpty ? Color.gray : Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                .disabled(currentInput.isEmpty)
             }
-            .disabled(currentInput.isEmpty)
         }
         .padding()
     }
@@ -128,11 +142,18 @@ struct ScoreInputView: View {
             clear()
         }
     }
+    
+    private func farkle() {
+        onFarkle()
+        clear()
+    }
 }
 
 #Preview {
     ScoreInputView(currentInput: .constant("")) { score in
         print("Score submitted: \(score)")
+    } onFarkle: {
+        print("Farkle!")
     }
 }
 
