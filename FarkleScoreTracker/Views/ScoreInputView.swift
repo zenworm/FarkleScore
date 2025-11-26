@@ -22,7 +22,20 @@ struct ScoreInputView: View {
         VStack(spacing: 12) {
             // Display current input
             HStack {
+                // Reset button on the left (only shown when there's input)
+                if !currentInput.isEmpty {
+                    Button(action: clear) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.title2)
+                            .foregroundColor(.red)
+                            .padding(.horizontal, 16)
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                }
+                
                 Spacer()
+                
+                // Numbers on the right
                 Text(currentInput.isEmpty ? "0" : currentInput)
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
@@ -33,26 +46,7 @@ struct ScoreInputView: View {
             .frame(height: 80)
             .background(Color.gray.opacity(0.1))
             .cornerRadius(12)
-            
-            // Quick action buttons
-            HStack(spacing: 12) {
-                CalculatorButton(
-                    title: "50",
-                    backgroundColor: .blue.opacity(0.2),
-                    foregroundColor: .blue
-                ) {
-                    appendShortcut("50")
-                }
-                
-                CalculatorButton(
-                    title: "00",
-                    backgroundColor: .blue.opacity(0.2),
-                    foregroundColor: .blue
-                ) {
-                    appendShortcut("00")
-                }
-            }
-            .frame(height: 60)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentInput.isEmpty)
             
             // Number pad
             LazyVGrid(columns: columns, spacing: 12) {
@@ -63,11 +57,11 @@ struct ScoreInputView: View {
                 }
                 
                 CalculatorButton(
-                    title: "⌫",
-                    backgroundColor: .orange.opacity(0.2),
-                    foregroundColor: .orange
+                    title: "50",
+                    backgroundColor: .blue.opacity(0.2),
+                    foregroundColor: .blue
                 ) {
-                    backspace()
+                    appendShortcut("50")
                 }
                 
                 CalculatorButton(title: "0") {
@@ -75,11 +69,11 @@ struct ScoreInputView: View {
                 }
                 
                 CalculatorButton(
-                    title: "C",
-                    backgroundColor: .red.opacity(0.2),
-                    foregroundColor: .red
+                    title: "00",
+                    backgroundColor: .blue.opacity(0.2),
+                    foregroundColor: .blue
                 ) {
-                    clear()
+                    appendShortcut("00")
                 }
             }
             
@@ -93,7 +87,7 @@ struct ScoreInputView: View {
                         .frame(height: 60)
                         .background(Color.red)
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(4)
                 }
                 
                 Button(action: submitScore) {
@@ -104,7 +98,7 @@ struct ScoreInputView: View {
                         .frame(height: 60)
                         .background(currentInput.isEmpty ? Color.gray : Color.green)
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(4)
                 }
                 .disabled(currentInput.isEmpty)
             }
@@ -116,12 +110,6 @@ struct ScoreInputView: View {
         // Limit input length
         if currentInput.count < 6 {
             currentInput += number
-        }
-    }
-    
-    private func backspace() {
-        if !currentInput.isEmpty {
-            currentInput.removeLast()
         }
     }
     

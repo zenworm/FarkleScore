@@ -12,113 +12,152 @@ struct ContentView: View {
     @State private var currentInput = ""
     @State private var showingPlayerList = false
     @State private var showingResetAlert = false
+    @State private var showingCelebration = false
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                if gameState.players.isEmpty {
-                    // Empty state
-                    VStack(spacing: 20) {
-                        Image(systemName: "person.3.fill")
-                            .font(.system(size: 80))
-                            .foregroundColor(.gray)
-                        
-                        Text("No Players Yet")
-                            .font(.title)
-                            .fontWeight(.bold)
-                        
-                        Text("Add players to start tracking scores")
-                            .foregroundColor(.secondary)
-                        
-                        Button(action: { showingPlayerList = true }) {
-                            Label("Add Players", systemImage: "person.badge.plus")
-                                .font(.headline)
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                        }
-                        .padding(.top)
+            mainContent
+                .navigationTitle("Farkle Scorer")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    toolbarContent
+                }
+                .sheet(isPresented: $showingPlayerList) {
+                    PlayerListView()
+                }
+                .alert("Reset Game", isPresented: $showingResetAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Reset", role: .destructive) {
+                        gameState.resetGame()
+                        currentInput = ""
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    // Game in progress
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            VStack(spacing: 16) {
-                                // Player list
-                                ForEach(gameState.players) { player in
-                                    PlayerRowView(
-                                        player: player,
-                                        isCurrentTurn: player.id == gameState.currentPlayer?.id
-                                    )
-                                    .id(player.id)
-                                }
-                            }
-                            .padding()
-                        }
-                        .onChange(of: gameState.currentTurnIndex) { oldValue, newValue in
-                            // Scroll to current player when turn changes
-                            if let currentPlayer = gameState.currentPlayer {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    proxy.scrollTo(currentPlayer.id, anchor: .center)
-                                }
-                            }
-                        }
-                        .onAppear {
-                            // Scroll to current player on initial load
-                            if let currentPlayer = gameState.currentPlayer {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        proxy.scrollTo(currentPlayer.id, anchor: .center)
-                                    }
-                                }
-                            }
+                } message: {
+                    Text("This will reset all scores to 0. Are you sure?")
+                }
+                .onChange(of: gameState.winner) { oldValue, newValue in
+                    if newValue != nil {
+                        showingCelebration = true
+                    }
+                }
+                .fullScreenCover(isPresented: $showingCelebration) {
+                    celebrationOverlay
+                }
+        }
+    }
+    
+    @ViewBuilder
+    private var mainContent: some View {
+        VStack(spacing: 0) {
+            if gameState.players.isEmpty {
+                emptyStateView
+            } else {
+                gameInProgressView
+            }
+        }
+    }
+    
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "person.3.fill")
+                .font(.system(size: 80))
+                .foregroundColor(.gray)
+            
+            Text("No Players Yet")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            Text("Add players to start tracking scores")
+                .foregroundColor(.secondary)
+            
+            Button(action: { showingPlayerList = true }) {
+                Label("Add Players", systemImage: "person.badge.plus")
+                    .font(.headline)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(4)
+            }
+            .padding(.top)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private var gameInProgressView: some View {
+        VStack(spacing: 0) {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(gameState.players) { player in
+                            PlayerRowView(
+                                player: player,
+                                isCurrentTurn: player.id == gameState.currentPlayer?.id,
+                                isFinalRound: gameState.isFinalRound,
+                                leaderScore: gameState.leaderScore
+                            )
+                            .id(player.id)
                         }
                     }
-                    
-                    Divider()
-                    
-                    // Score input
-                    ScoreInputView(currentInput: $currentInput) { score in
-                        if let currentPlayer = gameState.currentPlayer {
-                            gameState.addScore(score, to: currentPlayer.id)
-                            gameState.advanceTurn()
+                    .padding()
+                }
+                .onChange(of: gameState.currentTurnIndex) { oldValue, newValue in
+                    if let currentPlayer = gameState.currentPlayer {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            proxy.scrollTo(currentPlayer.id, anchor: .center)
                         }
-                    } onFarkle: {
-                        // Farkle means no points scored, just advance turn
-                        gameState.advanceTurn()
+                    }
+                }
+                .onAppear {
+                    if let currentPlayer = gameState.currentPlayer {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                proxy.scrollTo(currentPlayer.id, anchor: .center)
+                            }
+                        }
                     }
                 }
             }
-            .navigationTitle("Farkle Scorer")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if !gameState.players.isEmpty {
-                        Button(action: { showingResetAlert = true }) {
-                            Image(systemName: "arrow.counterclockwise")
-                        }
-                    }
+            
+            Divider()
+            
+            ScoreInputView(currentInput: $currentInput) { score in
+                if let currentPlayer = gameState.currentPlayer {
+                    gameState.addScore(score, to: currentPlayer.id)
+                    gameState.advanceTurn()
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingPlayerList = true }) {
-                        Image(systemName: "person.3.fill")
-                    }
+            } onFarkle: {
+                gameState.advanceTurn()
+            }
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarLeading) {
+            if !gameState.players.isEmpty {
+                Button(action: { showingResetAlert = true }) {
+                    Image(systemName: "arrow.counterclockwise")
                 }
             }
-            .sheet(isPresented: $showingPlayerList) {
-                PlayerListView()
+        }
+        
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button(action: { showingPlayerList = true }) {
+                Image(systemName: "person.3.fill")
             }
-            .alert("Reset Game", isPresented: $showingResetAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Reset", role: .destructive) {
-                    gameState.resetGame()
-                    currentInput = ""
+        }
+    }
+    
+    @ViewBuilder
+    private var celebrationOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.8)
+                .ignoresSafeArea()
+            
+            if let winner = gameState.winner {
+                CelebrationView(winnerName: winner.name) {
+                    showingCelebration = false
                 }
-            } message: {
-                Text("This will reset all scores to 0. Are you sure?")
+                .padding()
             }
         }
     }

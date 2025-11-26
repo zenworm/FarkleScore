@@ -16,6 +16,7 @@
 		FA0013 /* PlayerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0012A /* PlayerListView.swift */; };
 		FA0014 /* PlayerRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0013A /* PlayerRowView.swift */; };
 		FA0015 /* CalculatorButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0014A /* CalculatorButton.swift */; };
+		FA0016 /* CelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0015A /* CelebrationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		FA0012A /* PlayerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerListView.swift; sourceTree = "<group>"; };
 		FA0013A /* PlayerRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerRowView.swift; sourceTree = "<group>"; };
 		FA0014A /* CalculatorButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorButton.swift; sourceTree = "<group>"; };
+		FA0015A /* CelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationView.swift; sourceTree = "<group>"; };
 		FA9999 /* FarkleScoreTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FarkleScoreTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -47,6 +49,7 @@
 			children = (
 				FA0013A /* PlayerRowView.swift */,
 				FA0014A /* CalculatorButton.swift */,
+				FA0015A /* CelebrationView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -175,6 +178,7 @@
 				FA0013 /* PlayerListView.swift in Sources */,
 				FA0014 /* PlayerRowView.swift in Sources */,
 				FA0015 /* CalculatorButton.swift in Sources */,
+				FA0016 /* CelebrationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

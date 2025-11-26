@@ -29,13 +29,13 @@ struct CalculatorButton: View {
         Button(action: action) {
             Text(title)
                 .font(.title2)
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(backgroundColor)
                 .foregroundColor(foregroundColor)
-                .cornerRadius(12)
+                .cornerRadius(4)
         }
-        .frame(height: 70)
+        .frame(height: 60)
     }
 }
 
